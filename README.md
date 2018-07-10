@@ -48,3 +48,27 @@ query
         .end()
 ;
 ```
+
+- Get results
+
+```java
+TSQuery query = new TSQuery();
+
+// The total of matched results
+query.count();
+
+// Return all matched results
+query.list();
+// Return 'limit' results from 'start'
+query.page(start, limit);
+// Return the single result, if there are more than one results,
+// the exception will be thrown
+query.single();
+
+// Return the first matched result
+query.first();
+// Return the last matched result
+query.last();
+// Pick one matched result which is at 'offset'
+query.pick(offset);
+```
