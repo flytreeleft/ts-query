@@ -1,6 +1,7 @@
-**T**ype-**S**afety Query - TSQuery
+Type-Safety Query - TSQuery
 ==============================
 
+A **t**ype-**s**afety query for SQL, HQL, GraphQL and JSON path mutation.
 
 ## Goal
 
@@ -18,9 +19,9 @@ query
             .prop(m.getName()).is("a")
             .and
             .prop(m.getCode()).isNotNull()
-        .$().or._
+        .$.or._
             .prop(m.getTime()).greaterThan(new Date())
-        .$() // -> `)`
+        .$ // -> `)`
     .group()
         .by(m.getName())
         .by(m.getCode())
