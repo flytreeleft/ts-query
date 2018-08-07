@@ -9,25 +9,27 @@ A **t**ype-**s**afety query for SQL, HQL, GraphQL and JSON path mutation.
 
 ```java
 TSQuery query = new TSQuery();
-Object m = query.use(Model.class);
+A a = query.use(A.class);
+B b = query.use(B.class);
 
 query
-    .select(m.getId())
-    .from(m, A.class)
+    .select()
+        ._(a.getId(), b.getId())
+    .from()
+        ._(a, b)
     .where()
-        ._ // -> `(`
-            .prop(m.getName()).is("a")
-            .and
-            .prop(m.getCode()).isNotNull()
-        .$.or._
-            .prop(m.getTime()).greaterThan(new Date())
-        .$ // -> `)`
+        ._() // -> `(`
+            .prop(a.getName()).equalTo("a")
+            .and(a.getCode()).isNotNull()
+        .$().or()._()
+            .prop(a.getTime()).greaterThan(new Date())
+        .$() // -> `)`
     .group()
-        .by(m.getName())
-        .by(m.getCode())
+        .by(a.getName())
+        .by(a.getCode())
     .order()
-        .by(m.getName()).desc()
-        .by(m.getCode()).asc()
+        .by(a.getName()).desc()
+        .by(a.getCode()).asc()
 ;
 ```
 
@@ -35,17 +37,70 @@ query
 
 ```java
 TSQuery query = new TSQuery();
-Object m = query.use(Model.class);
+A a = query.use(A.class);
 
 query
-    .select(m.getId())
-    .from(m)
+    .select()
+        ._(a.getId())
+    .from()
+        ._(a)
     .where()
-        .when(a > 10)
-            .prop(m.getCode()).is("abc")
+        .when(x > 10)
+            .prop(a.getCode()).equalTo("abc")
         .otherwise()
-            .prop(m.getCode()).is("def")
+            .prop(a.getCode()).equalTo("def")
         .end()
+;
+```
+
+- Complex query
+
+```java
+TSQuery query = new TSQuery();
+Order order = query.use(Order.class);
+LineItem item = query.use(order.getLineItems());
+Product product = query.use(item.product);
+Catalog catalog = query.use(Catalog.class);
+Price price = query.use(catalog.getPrices());
+
+TSQuery subQuery = new TSQuery();
+Catalog cat = subQuery.use(Catalog.class);
+
+query
+    .select()
+        .distinct(order.getId())
+        .and().sum(price.getAmount())
+        .and().count(item)
+    .from()
+        ._(order).join(item).join(product)
+        .and(catalog).join(price)
+    .where()
+        ._()
+            .prop(order.isPaid()).equalTo(false)
+            .or(order.getCustomer()).equalTo("sad")
+        .$().and()._()
+            .prop(price.getProduct()).equalTo(product)
+            .or()._()
+                .prop(catalog.getEffectiveDate()).lessThan().sysdate()
+                .and(catalog.getEffectiveDate()).greaterAndEqualThan().all(
+                    subQuery
+                        .select()
+                            ._(cat.getEffectiveDate()/*, ...*/)
+                            //.and(cat.getXx(), ...)
+                        .from()
+                            ._(cat/*, ...*/)
+                            //.and(prod, ...)
+                        .where()
+                            .prop(cat.getEffectiveDate()).lessThan().sysdate()
+                )
+            .$()
+        .$()
+    .group()
+        .by(order).having().sum(price.getAmount()).greaterThan(123)
+        .by(catalog.getName())
+    .order()
+        .by().sum(price.getAmount()).desc()
+        .by(cat.getEffectiveDate()).asc()
 ;
 ```
 
