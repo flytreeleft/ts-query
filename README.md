@@ -129,3 +129,8 @@ query.last();
 // Pick one matched result which is at 'offset'
 query.pick(offset);
 ```
+
+## Reference
+
+- [HQL: The Hibernate Query Language](http://docs.jboss.org/hibernate/core/3.5/reference/en-US/html_single/#queryhql-examples)
+- [Introduction to GraphQL](http://graphql.github.io/learn/)
